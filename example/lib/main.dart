@@ -23,8 +23,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final NepaliDateTime first = NepaliDateTime(2075, 5);
-    final NepaliDateTime last = NepaliDateTime(2079, 3);
+    final NepaliDateTime first = NepaliDateTime(2000, 1);
+    final NepaliDateTime last = NepaliDateTime(2100, 12);
     return Scaffold(
       appBar: AppBar(
         title: Text('Clean Nepali Calendar'),
@@ -71,7 +71,6 @@ class HomePage extends StatelessWidget {
                   lastDate: last,
                   language: Language.nepali,
                   onDaySelected: (day) {
-                    print(day.toString());
                   },
                   dateCellBuilder: cellBuilder),
             ),
@@ -118,8 +117,6 @@ class HomePage extends StatelessWidget {
             Text(text,
                 style: TextStyle(
                     fontSize: 20, color: isWeekend ? Colors.red : null)),
-
-            // to show events
             Align(
                 alignment: Alignment.bottomCenter,
                 child: CircleAvatar(

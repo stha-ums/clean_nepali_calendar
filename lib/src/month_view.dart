@@ -217,6 +217,16 @@ class _MonthViewState extends State<_MonthView>
     });
   }
 
+  var _viewMode = CalenderView.MonthView;
+
+  void _toggleMonthAndYearView() {
+    if (_viewMode == CalenderView.MonthView)
+      _viewMode = CalenderView.YearView;
+    else
+      _viewMode = CalenderView.MonthView;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     double _kMaxDayPickerHeight =
@@ -226,63 +236,70 @@ class _MonthViewState extends State<_MonthView>
       child: Column(
         children: <Widget>[
           _CalendarHeader(
-            onHeaderLongPressed: widget.onHeaderLongPressed,
-            onHeaderTapped: widget.onHeaderTapped,
-            language: widget.language,
-            handleNextMonth: _handleNextMonth,
-            handlePreviousMonth: _handlePreviousMonth,
-            headerStyle: widget.headerStyle,
-            chevronOpacityAnimation: _chevronOpacityAnimation,
-            isDisplayingFirstMonth: _isDisplayingFirstMonth,
-            previousMonthDate: _previousMonthDate,
-            date: _currentDisplayedMonthDate,
-            isDisplayingLastMonth: _isDisplayingLastMonth,
-            nextMonthDate: _nextMonthDate,
-            changeToToday: () {
-              widget.onChanged(NepaliDateTime.now());
-            },
-            headerBuilder: widget.headerBuilder,
-          ),
+              onHeaderLongPressed: widget.onHeaderLongPressed,
+              onHeaderTapped: widget.onHeaderTapped,
+              language: widget.language,
+              handleNextMonth: _handleNextMonth,
+              handlePreviousMonth: _handlePreviousMonth,
+              headerStyle: widget.headerStyle,
+              chevronOpacityAnimation: _chevronOpacityAnimation,
+              isDisplayingFirstMonth: _isDisplayingFirstMonth,
+              previousMonthDate: _previousMonthDate,
+              date: _currentDisplayedMonthDate,
+              isDisplayingLastMonth: _isDisplayingLastMonth,
+              nextMonthDate: _nextMonthDate,
+              changeToToday: () {
+                widget.onChanged(NepaliDateTime.now());
+              },
+              headerBuilder: widget.headerBuilder,
+              toggleMonthViewAndYearView: _toggleMonthAndYearView),
           Expanded(
             child: Stack(
               children: <Widget>[
-                Semantics(
-                  sortKey: _MonthPickerSortKey.calendar,
-                  child: NotificationListener<ScrollStartNotification>(
-                    onNotification: (_) {
-                      _chevronOpacityController.forward();
-                      return false;
-                    },
-                    child: NotificationListener<ScrollEndNotification>(
-                      onNotification: (_) {
-                        _chevronOpacityController.reverse();
-                        return false;
-                      },
-                      child: PageView.builder(
-                        dragStartBehavior: widget.dragStartBehavior,
-                        key: ValueKey<NepaliDateTime>(widget.selectedDate),
-                        controller: _dayPickerController,
-                        scrollDirection: Axis.horizontal,
-                        itemCount:
-                            _monthDelta(widget.firstDate, widget.lastDate) + 1,
-                        itemBuilder: _buildItems,
-                        onPageChanged: (int pageNumber) {
-                          _handleMonthPageChanged(
-                              pageNumber, widget.onChangedMonth);
-                        },
-                      ),
-                    ),
-                  ),
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 1000),
+                  curve: Curves.elasticOut,
+                  child: (_viewMode == CalenderView.YearView)
+                      ? _DatePicker(
+                          maxHeight: _kMaxDayPickerHeight -
+                              widget.headerStyle.headerHeight,
+                          firstDate: widget.firstDate,
+                          lastDate: widget.lastDate,
+                          onChanged: widget.onChanged,
+                          toggleView: _toggleMonthAndYearView,
+                          selectedDate: widget.selectedDate,
+                        )
+                      : Semantics(
+                          sortKey: _MonthPickerSortKey.calendar,
+                          child: NotificationListener<ScrollStartNotification>(
+                            onNotification: (_) {
+                              _chevronOpacityController.forward();
+                              return false;
+                            },
+                            child: NotificationListener<ScrollEndNotification>(
+                              onNotification: (_) {
+                                _chevronOpacityController.reverse();
+                                return false;
+                              },
+                              child: PageView.builder(
+                                dragStartBehavior: widget.dragStartBehavior,
+                                key: ValueKey<NepaliDateTime>(
+                                    widget.selectedDate),
+                                controller: _dayPickerController,
+                                scrollDirection: Axis.horizontal,
+                                itemCount: _monthDelta(
+                                        widget.firstDate, widget.lastDate) +
+                                    1,
+                                itemBuilder: _buildItems,
+                                onPageChanged: (int pageNumber) {
+                                  _handleMonthPageChanged(
+                                      pageNumber, widget.onChangedMonth);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
-                /*  PositionedDirectional(
-                  top: 0.0,
-                  start: 8.0,
-                ), */
-                /* PositionedDirectional(
-                  top: 0.0,
-                  end: 8.0,
-                  child:
-                ), */
               ],
             ),
           ),
@@ -299,6 +316,71 @@ class _MonthViewState extends State<_MonthView>
   }
 }
 
+class _DatePicker extends StatelessWidget {
+  final NepaliDateTime firstDate;
+  final NepaliDateTime lastDate;
+  final NepaliDateTime selectedDate;
+
+  final double maxHeight;
+  final ValueChanged<NepaliDateTime> _onChanged;
+  final toggleView;
+
+  _DatePicker(
+      {Key? key,
+      required this.firstDate,
+      required this.lastDate,
+      required this.maxHeight,
+      required onChanged,
+      required this.toggleView,
+      required this.selectedDate})
+      : _onChanged = onChanged,
+        super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: maxHeight,
+      padding: EdgeInsets.all(8),
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: GridView.builder(
+        // spacing: 10,
+        // runSpacing: 10,
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 70,
+            childAspectRatio: 16 / 9,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10),
+        itemCount:
+            List.generate(lastDate.year - firstDate.year, (index) => index)
+                .length,
+        itemBuilder: (BuildContext context, int index) {
+          return TextButton(
+              style: ButtonStyle(
+                  padding: MaterialStateProperty.resolveWith(
+                      (states) => EdgeInsets.zero),
+                  backgroundColor: MaterialStateProperty.resolveWith(
+                      (states) => Theme.of(context).primaryColor),
+                  shape: MaterialStateProperty.resolveWith((states) =>
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)))),
+              onPressed: () {
+                toggleView();
+
+                final dayToBuild = NepaliDateTime(firstDate.year + index,
+                    selectedDate.month, selectedDate.day);
+                if (firstDate.isBefore(dayToBuild) &&
+                    lastDate.isBefore(dayToBuild)) _onChanged(dayToBuild);
+              },
+              child: Text(
+                "${firstDate.year + (index)}",
+                style: TextStyle(color: Colors.white),
+              ));
+        },
+      ),
+    );
+  }
+}
+
 // Defines semantic traversal order of the top-level widgets inside the month
 // picker.
 class _MonthPickerSortKey extends OrdinalSortKey {
@@ -308,3 +390,5 @@ class _MonthPickerSortKey extends OrdinalSortKey {
   static const _MonthPickerSortKey nextMonth = _MonthPickerSortKey(2.0);
   static const _MonthPickerSortKey calendar = _MonthPickerSortKey(3.0);
 }
+
+enum CalenderView { MonthView, YearView }

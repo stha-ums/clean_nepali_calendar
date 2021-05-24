@@ -184,7 +184,7 @@ class _DaysView extends StatelessWidget {
           day: dayToBuild,
           isWeekend: weekNumber == 6,
           onTap: () {
-            onChanged(dayToBuild);
+              onChanged(dayToBuild);
           },
           builder: dateCellBuilder,
         );
@@ -204,7 +204,6 @@ class _DaysView extends StatelessWidget {
 
       weekNumber += 1;
     }
-    print(labels.length);
     return GridView.custom(
       shrinkWrap: true,
       padding: EdgeInsets.zero,

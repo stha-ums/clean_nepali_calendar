@@ -5,6 +5,7 @@ typedef Widget HeaderBuilder(
   Function nextMonthHandler,
   Function prevMonthHandler,
   NepaliDateTime? nepaliDateTime,
+  Function toggleMonthViewAndYearView,
 );
 
 class _CalendarHeader extends StatelessWidget {
@@ -22,6 +23,7 @@ class _CalendarHeader extends StatelessWidget {
     required Function() handlePreviousMonth,
     required this.onHeaderTapped,
     required this.onHeaderLongPressed,
+    required this.toggleMonthViewAndYearView,
     required changeToToday,
     HeaderBuilder? headerBuilder,
   })  : _chevronOpacityAnimation = chevronOpacityAnimation,
@@ -52,6 +54,7 @@ class _CalendarHeader extends StatelessWidget {
   final HeaderGestureCallback? onHeaderTapped;
   final HeaderGestureCallback? onHeaderLongPressed;
   final HeaderBuilder? _headerBuilder;
+  final Function toggleMonthViewAndYearView;
 
   _onHeaderTapped() {
     if (onHeaderTapped != null) {
@@ -72,7 +75,7 @@ class _CalendarHeader extends StatelessWidget {
       onLongPress: _onHeaderLongPressed,
       child: (_headerBuilder != null)
           ? _headerBuilder!(_headerStyle.decoration, _handleNextMonth,
-              _handlePreviousMonth, date)
+              _handlePreviousMonth, date, toggleMonthViewAndYearView)
           : Container(
               decoration: _headerStyle.decoration,
               height: _headerStyle.headerHeight,
@@ -132,45 +135,50 @@ class _CalendarHeader extends StatelessWidget {
   }
 
   Widget _buildTitle() {
-    return FadeTransition(
-      opacity: _chevronOpacityAnimation!,
-      child: ExcludeSemantics(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    _headerStyle.titleTextBuilder != null
-                        ? _headerStyle.titleTextBuilder!(
-                            date,
-                            _language,
-                          )
-                        : '${formattedMonth(date!.month, _language)} - ${_language == Language.english ? date!.year : NepaliUnicode.convert('${date!.year}')}',
-                    style: _headerStyle.titleTextStyle,
-                    textAlign: _headerStyle.centerHeaderTitle
-                        ? TextAlign.center
-                        : TextAlign.start,
-                  ),
-                  Icon(Icons.arrow_drop_down)
-                ],
-              ),
-              Text(
-                _headerStyle.titleTextBuilder != null
-                    ? _headerStyle.titleTextBuilder!(
-                        date,
-                        _language,
-                      )
-                    : "${getFormattedEnglishMonth(date!.toDateTime().month)}/${getFormattedEnglishMonth(date!.toDateTime().month + 1)} - ${date!.toDateTime().year}",
-                style: _headerStyle.titleTextStyle
-                    .copyWith(fontWeight: FontWeight.normal, fontSize: 14),
-                textAlign: _headerStyle.centerHeaderTitle
-                    ? TextAlign.center
-                    : TextAlign.start,
-              ),
-            ],
+    return InkWell(
+      onTap: () {
+        toggleMonthViewAndYearView();
+      },
+      child: FadeTransition(
+        opacity: _chevronOpacityAnimation!,
+        child: ExcludeSemantics(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      _headerStyle.titleTextBuilder != null
+                          ? _headerStyle.titleTextBuilder!(
+                              date,
+                              _language,
+                            )
+                          : '${formattedMonth(date!.month, _language)} - ${_language == Language.english ? date!.year : NepaliUnicode.convert('${date!.year}')}',
+                      style: _headerStyle.titleTextStyle,
+                      textAlign: _headerStyle.centerHeaderTitle
+                          ? TextAlign.center
+                          : TextAlign.start,
+                    ),
+                    Icon(Icons.arrow_drop_down)
+                  ],
+                ),
+                Text(
+                  _headerStyle.titleTextBuilder != null
+                      ? _headerStyle.titleTextBuilder!(
+                          date,
+                          _language,
+                        )
+                      : "${getFormattedEnglishMonth(date!.toDateTime().month)}/${getFormattedEnglishMonth(date!.toDateTime().month + 1)} - ${date!.toDateTime().year}",
+                  style: _headerStyle.titleTextStyle
+                      .copyWith(fontWeight: FontWeight.normal, fontSize: 14),
+                  textAlign: _headerStyle.centerHeaderTitle
+                      ? TextAlign.center
+                      : TextAlign.start,
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -369,7 +369,7 @@ class _DatePicker extends StatelessWidget {
                 final dayToBuild = NepaliDateTime(firstDate.year + index,
                     selectedDate.month, selectedDate.day);
                 if (firstDate.isBefore(dayToBuild) &&
-                    lastDate.isBefore(dayToBuild)) _onChanged(dayToBuild);
+                    lastDate.isAfter(dayToBuild)) _onChanged(dayToBuild);
               },
               child: Text(
                 "${firstDate.year + (index)}",
